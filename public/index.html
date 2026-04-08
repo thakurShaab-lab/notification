@@ -1,66 +1,1008 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Push Notifications</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#050508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Notify">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <title>Notify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #050508;
+            --panel: #0d0d14;
+            --surface: #13131f;
+            --surface2: #1a1a2e;
+            --border: rgba(255,255,255,0.07);
+            --border-active: rgba(99,102,241,0.5);
+            --accent: #6366f1;
+            --accent-glow: rgba(99,102,241,0.25);
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --text: #f1f1f6;
+            --text-2: #9090aa;
+            --text-3: #555570;
+            --radius: 12px;
+            --font: 'Inter', system-ui, sans-serif;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 16px 60px;
+        }
+
+        /* Subtle bg texture */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.06), transparent);
+            pointer-events: none;
+        }
+
+        .wrap {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 28px 0 8px;
+        }
+        .logo {
+            width: 40px; height: 40px;
+            background: var(--accent);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 0 24px var(--accent-glow);
+        }
+        .header-text h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+        .header-text p { font-size: 0.8rem; color: var(--text-2); margin-top: 2px; }
+
+        /* ── Important banner ── */
+        .banner {
+            background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.06));
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            font-size: 0.83rem;
+            line-height: 1.6;
+            color: var(--text-2);
+        }
+        .banner strong { color: var(--text); }
+        .banner .banner-title {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-2);
+        }
+        .card-body { padding: 16px 18px; }
+
+        /* ── Status rows ── */
+        .status-list { display: flex; flex-direction: column; gap: 8px; }
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background: var(--surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text-3);
+            flex-shrink: 0;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .dot.green { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.5); animation: pulse 2s infinite; }
+        .dot.red   { background: var(--red);   box-shadow: 0 0 6px rgba(239,68,68,0.4); }
+        .dot.yellow{ background: var(--yellow); box-shadow: 0 0 6px rgba(234,179,8,0.4); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+        .status-info { flex: 1; }
+        .status-label { font-size: 0.84rem; font-weight: 500; }
+        .status-sub { font-size: 0.73rem; color: var(--text-2); margin-top: 1px; }
+
+        .badge {
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+            border: 1px solid;
+        }
+        .badge.ok { color: var(--green); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+        .badge.err { color: var(--red); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+        .badge.warn { color: var(--yellow); border-color: rgba(234,179,8,0.3); background: rgba(234,179,8,0.08); }
+        .badge.idle { color: var(--text-3); border-color: var(--border); background: transparent; }
+
+        /* ── Steps ── */
+        .steps { display: flex; flex-direction: column; gap: 0; }
+        .step {
+            display: flex;
+            gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .step:last-child { border-bottom: none; }
+        .step-num {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-2);
+            flex-shrink: 0;
+            margin-top: 1px;
+            transition: all 0.3s;
+        }
+        .step.done .step-num { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.1); }
+        .step.active .step-num { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,0.1); }
+        .step.err .step-num { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.1); }
+        .step-body { flex: 1; }
+        .step-title { font-size: 0.88rem; font-weight: 600; }
+        .step-desc { font-size: 0.78rem; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+        .step-action { margin-top: 10px; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 16px rgba(99,102,241,0.35);
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+        .btn-primary:hover { background: #7577f3; box-shadow: 0 4px 24px rgba(99,102,241,0.5); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid rgba(99,102,241,0.35);
+        }
+        .btn-outline:hover { background: rgba(99,102,241,0.08); border-color: var(--accent); }
+
+        .btn-ghost {
+            background: var(--surface);
+            color: var(--text-2);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+        .btn-success {
+            background: rgba(34,197,94,0.12);
+            color: var(--green);
+            border: 1px solid rgba(34,197,94,0.3);
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            cursor: default;
+        }
+
+        .btn-row { display: flex; gap: 8px; }
+        .btn-row .btn { flex: 1; }
+
+        /* ── Form ── */
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .form-group:last-child { margin-bottom: 0; }
+        label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-2); }
+        input, textarea {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: none;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        input::placeholder, textarea::placeholder { color: var(--text-3); }
+
+        /* ── Notification preview (Teams-style) ── */
+        .preview-wrap {
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 14px;
+            border: 1px solid var(--border);
+        }
+        .preview-label { font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+
+        /* Windows-style notification toast */
+        .toast {
+            background: #1f1f2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            position: relative;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+        .toast-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .toast-content { flex: 1; min-width: 0; }
+        .toast-app { font-size: 0.68rem; color: var(--text-2); margin-bottom: 2px; }
+        .toast-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .toast-body { font-size: 0.78rem; color: var(--text-2); margin-top: 3px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .toast-close { font-size: 16px; color: var(--text-3); cursor: pointer; padding: 2px 4px; line-height: 1; }
+        .toast-actions {
+            display: flex; gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .toast-btn {
+            flex: 1; padding: 6px 8px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 5px;
+            color: var(--text-2); font-size: 0.75rem;
+            cursor: pointer; text-align: center;
+            font-family: var(--font);
+            transition: background 0.15s;
+        }
+        .toast-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+        /* ── Stats row ── */
+        .stats-row { display: flex; gap: 10px; }
+        .stat {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 12px;
+            text-align: center;
+        }
+        .stat-val { font-size: 1.6rem; font-weight: 700; color: var(--accent); line-height: 1; }
+        .stat-key { font-size: 0.68rem; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+        /* ── Log ── */
+        .log {
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.72rem;
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .log-line {
+            display: flex; gap: 8px;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+        .log-line:hover { background: var(--surface); }
+        .log-time { color: var(--text-3); flex-shrink: 0; }
+        .log-msg { color: var(--text-2); line-height: 1.5; }
+        .log-line.ok .log-msg { color: var(--green); }
+        .log-line.err .log-msg { color: var(--red); }
+        .log-line.warn .log-msg { color: var(--yellow); }
+        .log-line.info .log-msg { color: #818cf8; }
+
+        /* ── iOS banner ── */
+        .ios-guide {
+            display: none;
+            background: rgba(234,179,8,0.06);
+            border: 1px solid rgba(234,179,8,0.2);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+        }
+        .ios-guide.show { display: block; }
+        .ios-guide-title { font-size: 0.82rem; font-weight: 600; color: var(--yellow); margin-bottom: 10px; }
+        .ios-guide ol { padding-left: 18px; }
+        .ios-guide li { font-size: 0.82rem; color: var(--text-2); line-height: 1.7; }
+        .ios-guide li strong { color: var(--text); }
+
+        /* ── Install prompt ── */
+        .install-bar {
+            display: none;
+            background: rgba(34,197,94,0.06);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            flex-direction: row;
+            align-items: center;
+            gap: 14px;
+        }
+        .install-bar.show { display: flex; }
+        .install-bar p { flex: 1; font-size: 0.82rem; color: var(--text-2); line-height: 1.5; }
+        .install-bar p strong { color: var(--text); }
+
+        /* Spinner */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { display: inline-block; animation: spin 0.7s linear infinite; }
+
+        .divider { height: 1px; background: var(--border); }
+
+        @media (max-width: 380px) {
+            .stats-row { flex-direction: column; }
+        }
+    </style>
 </head>
 <body>
+<div class="wrap">
 
-<h2>🚀 Push Notification Demo</h2>
-<button onclick="sendNotification()">Send Notification</button>
+    <div class="header">
+        <div class="logo">🔔</div>
+        <div class="header-text">
+            <h1>Push Notifications</h1>
+            <p>Teams-style · Works when browser is closed</p>
+        </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="banner">
+        <div class="banner-title">⚡ How background delivery works</div>
+        When your server sends a push, it goes to <strong>Google/Apple/Microsoft's push servers</strong> — not your browser directly.
+        Those servers wake up the Service Worker on your device and show the OS notification, <strong>even if the browser is completely closed.</strong>
+        <br><br>
+        The Service Worker must be registered once (below). After that, notifications arrive as long as the device is online.
+    </div>
+
+    <!-- iOS guide -->
+    <div class="ios-guide" id="iosGuide">
+        <div class="ios-guide-title">📱 iOS: You must install this as an app first</div>
+        <ol>
+            <li>Tap the <strong>Share</strong> button ⎙ in Safari's toolbar at the bottom</li>
+            <li>Scroll and tap <strong>"Add to Home Screen"</strong></li>
+            <li>Open the app from your Home Screen</li>
+            <li>Now enable notifications below — it will work in the background</li>
+        </ol>
+    </div>
+
+    <!-- PWA install bar -->
+    <div class="install-bar" id="installBar">
+        <div>📲</div>
+        <p><strong>Install this app</strong> for guaranteed background delivery, even when Chrome is closed.</p>
+        <button class="btn btn-outline" style="white-space:nowrap" id="installBtn">Install</button>
+    </div>
+
+    <!-- Setup steps -->
+    <div class="card">
+        <div class="card-head">
+            <span class="card-title">Setup</span>
+            <span id="setupBadge" class="badge idle">Not started</span>
+        </div>
+        <div class="steps">
+            <!-- Step 1: Service Worker -->
+            <div class="step" id="step1">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <div class="step-title">Register Service Worker</div>
+                    <div class="step-desc" id="step1Desc">The Service Worker runs in the background and displays notifications even when this page is closed.</div>
+                </div>
+            </div>
+
+            <!-- Step 2: Permission -->
+            <div class="step" id="step2">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <div class="step-title">Allow Notifications</div>
+                    <div class="step-desc" id="step2Desc">Grant permission so the OS can show push notifications from this app.</div>
+                </div>
+            </div>
+
+            <!-- Step 3: Subscribe -->
+            <div class="step" id="step3">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    <div class="step-title">Subscribe to Push</div>
+                    <div class="step-desc" id="step3Desc">Your device registers with Google/Apple/Microsoft push servers. Your endpoint is saved on this server.</div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-primary" id="enableBtn" onclick="setup()">🔔 Enable Background Notifications</button>
+        </div>
+    </div>
+
+    <!-- Status -->
+    <div class="card">
+        <div class="card-head"><span class="card-title">Live Status</span></div>
+        <div class="card-body">
+            <div class="status-list">
+                <div class="status-row">
+                    <div class="dot" id="d1"></div>
+                    <div class="status-info">
+                        <div class="status-label">Service Worker</div>
+                        <div class="status-sub" id="s1">Checking...</div>
+                    </div>
+                    <span class="badge idle" id="b1">—</span>
+                </div>
+                <div class="status-row">
+                    <div class="dot" id="d2"></div>
+                    <div class="status-info">
+                        <div class="status-label">Notification Permission</div>
+                        <div class="status-sub" id="s2">—</div>
+                    </div>
+                    <span class="badge idle" id="b2">—</span>
+                </div>
+                <div class="status-row">
+                    <div class="dot" id="d3"></div>
+                    <div class="status-info">
+                        <div class="status-label">Push Subscription</div>
+                        <div class="status-sub" id="s3">—</div>
+                    </div>
+                    <span class="badge idle" id="b3">—</span>
+                </div>
+                <div class="status-row">
+                    <div class="dot" id="d4"></div>
+                    <div class="status-info">
+                        <div class="status-label">Server Connection</div>
+                        <div class="status-sub" id="s4">—</div>
+                    </div>
+                    <span class="badge idle" id="b4">—</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-val" id="statSubs">—</div>
+            <div class="stat-key">Subscribers</div>
+        </div>
+        <div class="stat">
+            <div class="stat-val" id="statSent">0</div>
+            <div class="stat-key">Sent This Session</div>
+        </div>
+    </div>
+
+    <!-- Notification preview -->
+    <div class="card">
+        <div class="card-head"><span class="card-title">Preview (Windows/Mac style)</span></div>
+        <div class="card-body">
+            <div class="preview-wrap">
+                <div class="preview-label">How it appears on your desktop ↓</div>
+                <div class="toast">
+                    <div class="toast-icon">🔔</div>
+                    <div class="toast-content">
+                        <div class="toast-app">Notify · now</div>
+                        <div class="toast-title" id="previewTitle">🔥 Test Notification</div>
+                        <div class="toast-body" id="previewBody">This works even when the browser is completely closed!</div>
+                        <div class="toast-actions">
+                            <div class="toast-btn">Open</div>
+                            <div class="toast-btn">Dismiss</div>
+                        </div>
+                    </div>
+                    <div class="toast-close">✕</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send -->
+    <div class="card">
+        <div class="card-head"><span class="card-title">Send Notification</span></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Title</label>
+                <input id="nTitle" value="🔥 Test Notification" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="nBody" rows="2" oninput="updatePreview()">This works even when the browser is completely closed!</textarea>
+            </div>
+            <div class="form-group">
+                <label>Click URL</label>
+                <input id="nUrl" value="/" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>Persistent (stays until dismissed, like Teams)</label>
+                <select id="nRequire" style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:0.88rem;outline:none;">
+                    <option value="true" selected>Yes — stays on screen (recommended)</option>
+                    <option value="false">No — auto-dismisses after a few seconds</option>
+                </select>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="sendBtn" onclick="sendNotif()" style="padding:11px 20px;font-size:0.86rem;">⚡ Send to All</button>
+                <button class="btn btn-ghost" onclick="localTest()" style="padding:11px 18px;font-size:0.86rem;" title="Test without server">🧪 Local</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log -->
+    <div class="card">
+        <div class="card-head">
+            <span class="card-title">Activity Log</span>
+            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="card-body">
+            <div class="log" id="log"></div>
+        </div>
+    </div>
+
+</div>
 
 <script>
-function sendNotification() {
-    fetch('/send')
+/* ════════════════════════════════════════════════════════════════════════════
+   NOTIFICATION CLIENT
+   ════════════════════════════════════════════════════════════════════════════ */
+
+let sw = null
+let sessionSent = 0
+let isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+let isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
+let deferredInstall = null
+
+// ── Preview sync ─────────────────────────────────────────────────────────────
+function updatePreview() {
+    document.getElementById('previewTitle').textContent = document.getElementById('nTitle').value || 'Notification'
+    document.getElementById('previewBody').textContent = document.getElementById('nBody').value || ''
 }
 
-function urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4)
-    const base64 = (base64String + padding)
-        .replace(/-/g, '+')
-        .replace(/_/g, '/')
+// ── Logging ──────────────────────────────────────────────────────────────────
+function log(msg, type = '') {
+    const el = document.getElementById('log')
+    const time = new Date().toTimeString().slice(0, 8)
+    const line = document.createElement('div')
+    line.className = `log-line ${type}`
+    line.innerHTML = `<span class="log-time">${time}</span><span class="log-msg">${msg}</span>`
+    el.insertBefore(line, el.firstChild)
+    while (el.children.length > 60) el.removeChild(el.lastChild)
+}
+function clearLog() { document.getElementById('log').innerHTML = '' }
 
-    const rawData = atob(base64)
-    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)))
+// ── Status helpers ────────────────────────────────────────────────────────────
+function setStatus(n, state, sub, badge) {
+    const dot = document.getElementById(`d${n}`)
+    const subEl = document.getElementById(`s${n}`)
+    const badgeEl = document.getElementById(`b${n}`)
+
+    dot.className = 'dot'
+    badgeEl.className = 'badge'
+
+    if (state === 'ok')   { dot.classList.add('green'); badgeEl.classList.add('ok') }
+    if (state === 'err')  { dot.classList.add('red');   badgeEl.classList.add('err') }
+    if (state === 'warn') { dot.classList.add('yellow');badgeEl.classList.add('warn') }
+    if (state === 'idle') { badgeEl.classList.add('idle') }
+
+    subEl.textContent = sub
+    badgeEl.textContent = badge
 }
 
-async function init() {
+function setStep(n, state, desc) {
+    const el = document.getElementById(`step${n}`)
+    el.className = `step ${state}`
+    if (desc) document.getElementById(`step${n}Desc`).textContent = desc
+}
+
+// ── Platform detection ────────────────────────────────────────────────────────
+function detectPlatform() {
+    if (isIOS && !isStandalone) {
+        document.getElementById('iosGuide').classList.add('show')
+        log('⚠️ iOS detected — must install as PWA for push to work', 'warn')
+    } else if (isIOS && isStandalone) {
+        log('✅ iOS PWA mode detected', 'ok')
+    }
+
+    const browser = getBrowser()
+    const os = getOS()
+    log(`Platform: ${browser} on ${os}`)
+}
+
+// ── PWA install prompt ────────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault()
+    deferredInstall = e
+    document.getElementById('installBar').classList.add('show')
+    log('💡 Install prompt available', 'info')
+})
+
+document.getElementById('installBtn').addEventListener('click', async () => {
+    if (!deferredInstall) return
+    deferredInstall.prompt()
+    const { outcome } = await deferredInstall.userChoice
+    if (outcome === 'accepted') {
+        document.getElementById('installBar').classList.remove('show')
+        log('✅ App installed!', 'ok')
+    }
+    deferredInstall = null
+})
+
+// ── VAPID helper ──────────────────────────────────────────────────────────────
+function urlBase64ToUint8Array(b64) {
+    const pad = '='.repeat((4 - b64.length % 4) % 4)
+    const base64 = (b64 + pad).replace(/-/g, '+').replace(/_/g, '/')
+    const raw = atob(base64)
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)))
+}
+
+// ── Main setup flow ───────────────────────────────────────────────────────────
+async function setup() {
+    if (isIOS && !isStandalone) {
+        document.getElementById('iosGuide').scrollIntoView({ behavior: 'smooth' })
+        log('⚠️ iOS: Open from Home Screen first', 'warn')
+        return
+    }
+
+    const btn = document.getElementById('enableBtn')
+    btn.disabled = true
+    btn.innerHTML = '<span class="spin">⏳</span> Setting up...'
+    document.getElementById('setupBadge').textContent = 'Working...'
+    document.getElementById('setupBadge').className = 'badge warn'
+
+    // Step 1: Service Worker
+    setStep(1, 'active', 'Registering service worker...')
+    const swOk = await registerSW()
+    if (!swOk) {
+        document.getElementById('setupBadge').textContent = 'SW Failed'
+        document.getElementById('setupBadge').className = 'badge err'
+        btn.disabled = false
+        btn.innerHTML = '🔄 Retry'
+        return
+    }
+    setStep(1, 'done', 'Service worker active — will receive pushes even when browser is closed')
+
+    // Step 2: Permission
+    setStep(2, 'active', 'Requesting notification permission...')
+    const permOk = await requestPermission()
+    if (!permOk) {
+        setStep(2, 'err', 'Permission denied — go to browser settings → Site Settings → Notifications → Allow')
+        document.getElementById('setupBadge').textContent = 'Blocked'
+        document.getElementById('setupBadge').className = 'badge err'
+        btn.disabled = false
+        btn.innerHTML = '🔄 Retry'
+        return
+    }
+    setStep(2, 'done', 'Permission granted ✓')
+
+    // Step 3: Subscribe
+    setStep(3, 'active', 'Registering with push servers...')
+    const subOk = await subscribe()
+    if (!subOk) {
+        setStep(3, 'err', 'Subscription failed — check server logs')
+        document.getElementById('setupBadge').textContent = 'Sub Failed'
+        document.getElementById('setupBadge').className = 'badge err'
+        btn.disabled = false
+        btn.innerHTML = '🔄 Retry'
+        return
+    }
+    setStep(3, 'done', `Subscribed! Notifications will arrive even when the browser is closed`)
+
+    document.getElementById('setupBadge').textContent = 'Active ✓'
+    document.getElementById('setupBadge').className = 'badge ok'
+    btn.outerHTML = `<button class="btn btn-success">✓ Background Notifications Active</button>`
+    log('🎉 All set! Close the browser and test with the Send button', 'ok')
+}
+
+async function registerSW() {
     if (!('serviceWorker' in navigator)) {
-        alert("No Service Worker support")
-        return
+        setStatus(1, 'err', 'Not supported in this browser', 'Unsupported')
+        log('❌ Service Workers not supported', 'err')
+        return false
     }
 
-    const permission = await Notification.requestPermission()
-    if (permission !== 'granted') {
-        alert("Permission denied")
-        return
+    try {
+        sw = await navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' })
+        await navigator.serviceWorker.ready
+
+        setStatus(1, 'ok', `Active — scope: ${sw.scope}`, 'Active')
+        log('✅ Service Worker registered and ready', 'ok')
+        return true
+    } catch (err) {
+        setStatus(1, 'err', err.message, 'Error')
+        log(`❌ SW failed: ${err.message}`, 'err')
+        return false
+    }
+}
+
+async function requestPermission() {
+    if (!('Notification' in window)) {
+        setStatus(2, 'err', 'Notification API not available', 'N/A')
+        return false
     }
 
-    const registration = await navigator.serviceWorker.register('/service-worker.js')
+    const current = Notification.permission
+    if (current === 'denied') {
+        setStatus(2, 'err', 'Blocked — enable in browser settings then reload', 'Blocked')
+        log('❌ Notifications blocked in browser settings', 'err')
+        return false
+    }
 
-    const publicKey = await fetch('/vapidPublicKey').then(res => res.text())
+    let perm = current
+    if (perm === 'default') {
+        perm = await Notification.requestPermission()
+    }
 
-    let subscription = await registration.pushManager.getSubscription()
+    if (perm === 'granted') {
+        setStatus(2, 'ok', 'Granted — OS can show notifications', 'Granted')
+        log('✅ Permission granted', 'ok')
+        return true
+    } else {
+        setStatus(2, 'err', 'Permission denied', 'Denied')
+        log('❌ Permission denied', 'err')
+        return false
+    }
+}
 
-    if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicKey)
+async function subscribe() {
+    if (!sw) { log('❌ No SW registration', 'err'); return false }
+
+    try {
+        const { key } = await fetch('/vapidPublicKey').then(r => r.json())
+
+        let sub = await sw.pushManager.getSubscription()
+
+        if (!sub) {
+            sub = await sw.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(key)
+            })
+        }
+
+        const meta = { browser: getBrowser(), os: getOS(), standalone: isStandalone, ios: isIOS }
+        const res = await fetch('/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...sub.toJSON(), meta })
         })
+
+        const data = await res.json()
+        document.getElementById('statSubs').textContent = data.total
+
+        const endpoint = sub.endpoint
+        const service = endpoint.includes('fcm') ? 'FCM (Google)' :
+                        endpoint.includes('push.apple') ? 'APNs (Apple)' :
+                        endpoint.includes('windows') ? 'WNS (Microsoft)' : 'Push Server'
+
+        setStatus(3, 'ok', `Registered via ${service}`, 'Subscribed')
+        log(`✅ Subscribed via ${service} | Total: ${data.total}`, 'ok')
+
+        if ('sync' in sw) sw.sync.register('sync-subscription').catch(() => {})
+
+        return true
+    } catch (err) {
+        setStatus(3, 'err', err.message, 'Failed')
+        log(`❌ Subscribe error: ${err.message}`, 'err')
+        return false
+    }
+}
+
+// ── Send notification ─────────────────────────────────────────────────────────
+async function sendNotif() {
+    const btn = document.getElementById('sendBtn')
+    btn.disabled = true
+    btn.innerHTML = '<span class="spin">⏳</span> Sending...'
+
+    const payload = {
+        title: document.getElementById('nTitle').value || '🔔 Notification',
+        body: document.getElementById('nBody').value || 'New message',
+        url: document.getElementById('nUrl').value || '/',
+        requireInteraction: document.getElementById('nRequire').value === 'true',
+        tag: 'notif-' + Date.now()
     }
 
-    await fetch('/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription)
-    })
+    try {
+        const res = await fetch('/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        const data = await res.json()
 
-    console.log("✅ Subscribed successfully")
+        if (data.success) {
+            sessionSent += data.sent
+            document.getElementById('statSent').textContent = sessionSent
+            log(`✅ Sent to ${data.sent} device(s) | Failed: ${data.failed} | Cleaned: ${data.removed}`, 'ok')
+            log(`💡 Close this browser now — notification should still arrive`, 'info')
+        } else {
+            log(`❌ ${data.error}`, 'err')
+        }
+    } catch (err) {
+        log(`❌ Send failed: ${err.message}`, 'err')
+    }
+
+    btn.disabled = false
+    btn.innerHTML = '⚡ Send to All'
+}
+
+// Local test (no server needed, confirms SW is working)
+async function localTest() {
+    if (!sw) { log('❌ Service Worker not registered yet', 'err'); return }
+    if (Notification.permission !== 'granted') { log('❌ Permission not granted', 'err'); return }
+
+    await sw.showNotification(document.getElementById('nTitle').value || '🧪 Local Test', {
+        body: document.getElementById('nBody').value || 'Local test — confirms SW is working',
+        icon: '/icon.png',
+        badge: '/badge.png',
+        tag: 'local-' + Date.now(),
+        requireInteraction: document.getElementById('nRequire').value === 'true',
+        renotify: true,
+        data: { url: '/' },
+        actions: [
+            { action: 'open', title: 'Open' },
+            { action: 'dismiss', title: 'Dismiss' }
+        ]
+    })
+    log('✅ Local notification shown (SW is working)', 'ok')
+    log('📌 Now test "Send to All" and CLOSE THE BROWSER — notification should still arrive', 'info')
+}
+
+// ── Server health ─────────────────────────────────────────────────────────────
+async function checkServer() {
+    try {
+        const data = await fetch('/health').then(r => r.json())
+        setStatus(4, 'ok', `Connected · ${data.subscribers} subscriber(s)`, 'Online')
+        document.getElementById('statSubs').textContent = data.subscribers
+        log(`✅ Server connected | ${data.subscribers} subscriber(s)`, 'ok')
+    } catch {
+        setStatus(4, 'err', 'Cannot reach server', 'Offline')
+        log('❌ Server unreachable', 'err')
+    }
+}
+
+// ── Browser detection ─────────────────────────────────────────────────────────
+function getBrowser() {
+    const ua = navigator.userAgent
+    if (/CriOS/i.test(ua)) return 'Chrome iOS'
+    if (/FxiOS/i.test(ua)) return 'Firefox iOS'
+    if (/EdgiOS/i.test(ua)) return 'Edge iOS'
+    if (/Samsung/i.test(ua)) return 'Samsung Internet'
+    if (/Edg\//i.test(ua)) return 'Edge'
+    if (/Chrome/i.test(ua)) return 'Chrome'
+    if (/Firefox/i.test(ua)) return 'Firefox'
+    if (/Safari/i.test(ua)) return 'Safari'
+    return 'Unknown'
+}
+
+function getOS() {
+    const ua = navigator.userAgent
+    if (/iPhone/i.test(ua)) return 'iPhone'
+    if (/iPad/i.test(ua)) return 'iPad'
+    if (/Android/i.test(ua)) return 'Android'
+    if (/Windows/i.test(ua)) return 'Windows'
+    if (/Mac/i.test(ua)) return 'macOS'
+    if (/Linux/i.test(ua)) return 'Linux'
+    return 'Unknown'
+}
+
+// ── Check existing state on load ──────────────────────────────────────────────
+async function init() {
+    detectPlatform()
+    log('Initializing...')
+
+    // Check SW
+    if ('serviceWorker' in navigator) {
+        const existing = await navigator.serviceWorker.getRegistration('/')
+        if (existing) {
+            sw = existing
+            await navigator.serviceWorker.ready
+            setStatus(1, 'ok', `Active — scope: ${existing.scope}`, 'Active')
+            setStep(1, 'done')
+            log('✅ Existing service worker found', 'ok')
+        } else {
+            setStatus(1, 'idle', 'Not registered yet — click setup below', '—')
+        }
+    } else {
+        setStatus(1, 'err', 'Not supported', 'N/A')
+    }
+
+    // Check permission
+    if ('Notification' in window) {
+        const perm = Notification.permission
+        if (perm === 'granted') {
+            setStatus(2, 'ok', 'Granted', 'Granted')
+            setStep(2, 'done')
+        } else if (perm === 'denied') {
+            setStatus(2, 'err', 'Blocked in browser settings', 'Blocked')
+            setStep(2, 'err', 'Blocked — go to browser Settings → Site Settings → Notifications → Allow')
+        } else {
+            setStatus(2, 'idle', 'Not requested yet', '—')
+        }
+    }
+
+    // Check push sub
+    if (sw) {
+        const sub = await sw.pushManager.getSubscription()
+        if (sub) {
+            const service = sub.endpoint.includes('fcm') ? 'FCM (Google)' :
+                            sub.endpoint.includes('push.apple') ? 'APNs (Apple)' : 'Push Server'
+            setStatus(3, 'ok', `Active via ${service}`, 'Active')
+            setStep(3, 'done')
+            log(`✅ Existing push subscription via ${service}`, 'ok')
+
+            if (Notification.permission === 'granted') {
+                document.getElementById('setupBadge').textContent = 'Active ✓'
+                document.getElementById('setupBadge').className = 'badge ok'
+                const btn = document.getElementById('enableBtn')
+                if (btn) {
+                    btn.outerHTML = `<button class="btn btn-success">✓ Background Notifications Active</button>`
+                }
+            }
+        } else {
+            setStatus(3, 'idle', 'Not subscribed yet', '—')
+        }
+    } else {
+        setStatus(3, 'idle', '—', '—')
+    }
+
+    await checkServer()
 }
 
 init()
 </script>
-
 </body>
 </html>

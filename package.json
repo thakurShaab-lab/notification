@@ -1,12 +1,12 @@
 {
   "name": "notification",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "Advanced cross-browser push notifications",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index",
     "start": "node index",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "generate-keys": "node -e \"const wp=require('web-push');const k=wp.generateVAPIDKeys();console.log('PUBLIC_KEY='+k.publicKey+'\\nPRIVATE_KEY='+k.privateKey)\""
   },
   "keywords": [],
   "author": "",
@@ -16,7 +16,6 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "nodemon": "^3.1.14",
-    "socket.io": "^4.8.3",
     "web-push": "^3.6.7"
   }
 }
