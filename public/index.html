@@ -397,6 +397,176 @@
         @media (max-width: 380px) {
             .stats-row { flex-direction: column; }
         }
+
+        /* ── Modal overlay ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .modal {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 460px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1);
+            animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-icon {
+            width: 38px; height: 38px;
+            background: rgba(99,102,241,0.15);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .modal-title { font-size: 1rem; font-weight: 700; }
+        .modal-sub { font-size: 0.75rem; color: var(--text-2); margin-top: 2px; }
+        .modal-close {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-2);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+        .modal-steps {
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-step {
+            display: flex;
+            gap: 14px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            transition: background 0.2s;
+        }
+        .modal-step:last-of-type { border-bottom: none; }
+        .modal-step.active { background: rgba(99,102,241,0.04); }
+        .modal-step.done  { background: rgba(34,197,94,0.03); }
+        .modal-step.err   { background: rgba(239,68,68,0.04); }
+
+        .modal-step-num {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-2);
+            flex-shrink: 0;
+            margin-top: 1px;
+            transition: all 0.3s;
+        }
+        .modal-step.done   .modal-step-num { border-color: var(--green);  color: var(--green);  background: rgba(34,197,94,0.1); }
+        .modal-step.active .modal-step-num { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,0.1); }
+        .modal-step.err    .modal-step-num { border-color: var(--red);    color: var(--red);    background: rgba(239,68,68,0.1); }
+
+        .modal-step-body { flex: 1; }
+        .modal-step-title { font-size: 0.9rem; font-weight: 600; }
+        .modal-step-desc  { font-size: 0.78rem; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: rgba(255,255,255,0.01);
+        }
+
+        /* trigger button on main page */
+        .subscribe-trigger {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 18px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .subscribe-trigger-icon {
+            width: 44px; height: 44px;
+            background: rgba(99,102,241,0.12);
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .subscribe-trigger-text { flex: 1; }
+        .subscribe-trigger-text h3 { font-size: 0.95rem; font-weight: 600; }
+        .subscribe-trigger-text p  { font-size: 0.78rem; color: var(--text-2); margin-top: 3px; }
+        /* ── Modal active state ── */
+        .modal-active-body {
+            padding: 28px 24px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-active-icon {
+            font-size: 44px;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .modal-active-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .modal-active-desc {
+            font-size: 0.8rem;
+            color: var(--text-2);
+            line-height: 1.6;
+            max-width: 340px;
+        }
+
+        .btn-danger {
+            background: rgba(239,68,68,0.1);
+            color: var(--red);
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.18); border-color: var(--red); }
+        .btn-danger:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -437,42 +607,76 @@
         <button class="btn btn-outline" style="white-space:nowrap" id="installBtn">Install</button>
     </div>
 
-    <!-- Setup steps -->
-    <div class="card">
-        <div class="card-head">
-            <span class="card-title">Setup</span>
-            <span id="setupBadge" class="badge idle">Not started</span>
+    <!-- Subscribe trigger (replaces old setup card) -->
+    <div class="subscribe-trigger" id="subscribeTriggerCard">
+        <div class="subscribe-trigger-icon">🔔</div>
+        <div class="subscribe-trigger-text">
+            <h3>Background Notifications</h3>
+            <p>Get notified even when the browser is closed</p>
         </div>
-        <div class="steps">
-            <!-- Step 1: Service Worker -->
-            <div class="step" id="step1">
-                <div class="step-num">1</div>
-                <div class="step-body">
-                    <div class="step-title">Register Service Worker</div>
-                    <div class="step-desc" id="step1Desc">The Service Worker runs in the background and displays notifications even when this page is closed.</div>
+        <span id="setupBadge" class="badge idle">Not started</span>
+        <button class="btn btn-primary" id="enableBtn" onclick="openSetupModal()" style="width:auto;padding:10px 16px;font-size:0.84rem;flex-shrink:0;">Enable</button>
+    </div>
+
+    <!-- Notification Overlay Popup -->
+    <div class="modal-overlay" id="setupModal" onclick="handleOverlayClick(event)">
+        <div class="modal">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <div class="modal-icon" id="modalIcon">🔔</div>
+                    <div>
+                        <div class="modal-title" id="modalTitle">Background Notifications</div>
+                        <div class="modal-sub" id="modalSub">Stay informed even when the browser is closed</div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeSetupModal()">✕</button>
+            </div>
+
+            <!-- State: idle (not yet enabled) -->
+            <div id="modalStateIdle">
+                <div class="modal-steps">
+                    <div class="modal-step" id="step1">
+                        <div class="modal-step-num">1</div>
+                        <div class="modal-step-body">
+                            <div class="modal-step-title">Register Service Worker</div>
+                            <div class="modal-step-desc" id="step1Desc">Runs in the background and shows notifications even when this page is closed.</div>
+                        </div>
+                    </div>
+                    <div class="modal-step" id="step2">
+                        <div class="modal-step-num">2</div>
+                        <div class="modal-step-body">
+                            <div class="modal-step-title">Allow Notifications</div>
+                            <div class="modal-step-desc" id="step2Desc">Grant permission so your OS can display push notifications.</div>
+                        </div>
+                    </div>
+                    <div class="modal-step" id="step3">
+                        <div class="modal-step-num">3</div>
+                        <div class="modal-step-body">
+                            <div class="modal-step-title">Subscribe to Push</div>
+                            <div class="modal-step-desc" id="step3Desc">Your device registers with push servers. Your endpoint is saved on this server.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="modalEnableBtn" onclick="setup()">🔔 Enable Background Notifications</button>
                 </div>
             </div>
 
-            <!-- Step 2: Permission -->
-            <div class="step" id="step2">
-                <div class="step-num">2</div>
-                <div class="step-body">
-                    <div class="step-title">Allow Notifications</div>
-                    <div class="step-desc" id="step2Desc">Grant permission so the OS can show push notifications from this app.</div>
+            <!-- State: active (already subscribed) -->
+            <div id="modalStateActive" style="display:none;">
+                <div class="modal-active-body">
+                    <div class="modal-active-icon">✅</div>
+                    <div class="modal-active-title">Notifications are Active</div>
+                    <div class="modal-active-desc">You'll receive push notifications even when this browser is fully closed. Your subscription is live on the push server.</div>
+                </div>
+                <div class="modal-footer" style="display:flex;gap:10px;">
+                    <button class="btn btn-ghost" onclick="closeSetupModal()" style="flex:1;">Close</button>
+                    <button class="btn btn-danger" id="modalDisableBtn" onclick="unsubscribe()" style="flex:1;">🔕 Disable Notifications</button>
                 </div>
             </div>
 
-            <!-- Step 3: Subscribe -->
-            <div class="step" id="step3">
-                <div class="step-num">3</div>
-                <div class="step-body">
-                    <div class="step-title">Subscribe to Push</div>
-                    <div class="step-desc" id="step3Desc">Your device registers with Google/Apple/Microsoft push servers. Your endpoint is saved on this server.</div>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <button class="btn btn-primary" id="enableBtn" onclick="setup()">🔔 Enable Background Notifications</button>
         </div>
     </div>
 
@@ -586,7 +790,10 @@
     <div class="card">
         <div class="card-head">
             <span class="card-title">Activity Log</span>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;" onclick="clearLog()">Clear</button>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;" onclick="clearSiteData()">🗑️ Clear Data</button>
+                <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;" onclick="clearLog()">Clear Log</button>
+            </div>
         </div>
         <div class="card-body">
             <div class="log" id="log"></div>
@@ -625,6 +832,57 @@ function log(msg, type = '') {
 }
 function clearLog() { document.getElementById('log').innerHTML = '' }
 
+// ── Clear Site Data ──────────────────────────────────────────────────────────
+async function clearSiteData() {
+    if (!confirm('This will:\n✓ Clear all site data (localStorage, cookies)\n✓ Unregister service workers\n✓ Remove your push subscription\n\nYou\'ll need to re-enable notifications afterwards.\n\nProceed?')) {
+        return
+    }
+
+    try {
+        // Clear localStorage
+        localStorage.clear()
+        log('✅ Cleared localStorage', 'ok')
+
+        // Unregister all service workers
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations()
+            for (const reg of registrations) {
+                await reg.unregister()
+            }
+            log(`✅ Unregistered ${registrations.length} service worker(s)`, 'ok')
+        }
+
+        // Clear IndexedDB (for subscriptions)
+        if (window.indexedDB) {
+            const dbs = await window.indexedDB.databases?.() || []
+            for (const db of dbs) {
+                window.indexedDB.deleteDatabase(db.name)
+            }
+            log('✅ Cleared IndexedDB', 'ok')
+        }
+
+        // Reset UI
+        document.getElementById('setupBadge').textContent = 'Not started'
+        document.getElementById('setupBadge').className = 'badge idle'
+        setStatus(1, 'idle', 'Checking...', '—')
+        setStatus(2, 'idle', '—', '—')
+        setStatus(3, 'idle', 'Not subscribed', '—')
+        setStatus(4, 'idle', '—', '—')
+
+        const enableBtn = document.getElementById('enableBtn')
+        if (enableBtn) {
+            enableBtn.textContent = 'Enable'
+            enableBtn.className = 'btn btn-primary'
+            enableBtn.style.cssText = 'width:auto;padding:10px 16px;font-size:0.84rem;flex-shrink:0;'
+            enableBtn.onclick = openSetupModal
+        }
+
+        log('🧹 Site data cleared. Please reload the page to start fresh.', 'warn')
+    } catch (err) {
+        log(`❌ Failed to clear data: ${err.message}`, 'err')
+    }
+}
+
 // ── Status helpers ────────────────────────────────────────────────────────────
 function setStatus(n, state, sub, badge) {
     const dot = document.getElementById(`d${n}`)
@@ -645,8 +903,28 @@ function setStatus(n, state, sub, badge) {
 
 function setStep(n, state, desc) {
     const el = document.getElementById(`step${n}`)
-    el.className = `step ${state}`
+    el.className = `modal-step ${state}`
     if (desc) document.getElementById(`step${n}Desc`).textContent = desc
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function openSetupModal() {
+    // Determine which state to show
+    const isActive = document.getElementById('setupBadge').textContent === 'Active ✓'
+    document.getElementById('modalStateIdle').style.display   = isActive ? 'none' : 'block'
+    document.getElementById('modalStateActive').style.display = isActive ? 'block' : 'none'
+
+    document.getElementById('setupModal').classList.add('show')
+    document.body.style.overflow = 'hidden'
+}
+
+function closeSetupModal() {
+    document.getElementById('setupModal').classList.remove('show')
+    document.body.style.overflow = ''
+}
+
+function handleOverlayClick(e) {
+    if (e.target === document.getElementById('setupModal')) closeSetupModal()
 }
 
 // ── Platform detection ────────────────────────────────────────────────────────
@@ -691,20 +969,21 @@ function urlBase64ToUint8Array(b64) {
 }
 
 // ── Main setup flow ───────────────────────────────────────────────────────────
+
 async function setup() {
     if (isIOS && !isStandalone) {
+        closeSetupModal()
         document.getElementById('iosGuide').scrollIntoView({ behavior: 'smooth' })
         log('⚠️ iOS: Open from Home Screen first', 'warn')
         return
     }
 
-    const btn = document.getElementById('enableBtn')
+    const btn = document.getElementById('modalEnableBtn')
     btn.disabled = true
     btn.innerHTML = '<span class="spin">⏳</span> Setting up...'
     document.getElementById('setupBadge').textContent = 'Working...'
     document.getElementById('setupBadge').className = 'badge warn'
 
-    // Step 1: Service Worker
     setStep(1, 'active', 'Registering service worker...')
     const swOk = await registerSW()
     if (!swOk) {
@@ -716,7 +995,6 @@ async function setup() {
     }
     setStep(1, 'done', 'Service worker active — will receive pushes even when browser is closed')
 
-    // Step 2: Permission
     setStep(2, 'active', 'Requesting notification permission...')
     const permOk = await requestPermission()
     if (!permOk) {
@@ -729,7 +1007,6 @@ async function setup() {
     }
     setStep(2, 'done', 'Permission granted ✓')
 
-    // Step 3: Subscribe
     setStep(3, 'active', 'Registering with push servers...')
     const subOk = await subscribe()
     if (!subOk) {
@@ -740,11 +1017,23 @@ async function setup() {
         btn.innerHTML = '🔄 Retry'
         return
     }
-    setStep(3, 'done', `Subscribed! Notifications will arrive even when the browser is closed`)
+    setStep(3, 'done', 'Subscribed! Notifications will arrive even when the browser is closed')
 
     document.getElementById('setupBadge').textContent = 'Active ✓'
     document.getElementById('setupBadge').className = 'badge ok'
-    btn.outerHTML = `<button class="btn btn-success">✓ Background Notifications Active</button>`
+    btn.innerHTML = '✓ All Done!'
+
+    setTimeout(() => {
+        closeSetupModal()
+        const enableBtn = document.getElementById('enableBtn')
+        if (enableBtn) {
+            enableBtn.textContent = '✓ Manage'
+            enableBtn.className = 'btn btn-success'
+            enableBtn.style.cssText = 'width:auto;padding:10px 16px;font-size:0.84rem;flex-shrink:0;'
+            enableBtn.onclick = openSetupModal
+        }
+    }, 900)
+
     log('🎉 All set! Close the browser and test with the Send button', 'ok')
 }
 
@@ -802,23 +1091,82 @@ async function subscribe() {
     if (!sw) { log('❌ No SW registration', 'err'); return false }
 
     try {
-        const { key } = await fetch('/vapidPublicKey').then(r => r.json())
+        const vapidResponse = await fetch('/vapidPublicKey')
+        if (!vapidResponse.ok) {
+            throw new Error(`Failed to fetch VAPID key: ${vapidResponse.status}`)
+        }
+        const { key } = await vapidResponse.json()
+
+        if (!key || typeof key !== 'string' || key.trim() === '') {
+            throw new Error('Invalid or empty VAPID public key from server')
+        }
+
+        log(`🔐 VAPID key fetched: ${key.substring(0, 20)}...`, 'info')
+        
+        // Store hash of current VAPID key to detect changes
+        const keyHash = btoa(key).substring(0, 16) // Simple hash
+        const storedKeyHash = localStorage.getItem('pushKeyHash')
 
         let sub = await sw.pushManager.getSubscription()
 
-        if (!sub) {
-            sub = await sw.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(key)
-            })
+        // If VAPID key changed, clear the old subscription
+        if (sub && storedKeyHash && storedKeyHash !== keyHash) {
+            log('⚠️ VAPID key changed — clearing old subscription...', 'warn')
+            try {
+                // Notify server to remove old endpoint
+                await fetch('/unsubscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint: sub.endpoint })
+                }).catch(() => {}) // server endpoint may not exist, that's ok
+            } catch (e) { /* ignore */ }
+            
+            // Force unsubscribe from browser
+            await sub.unsubscribe()
+            sub = null
         }
 
+        // Create new subscription if needed
+        if (!sub) {
+            log('📡 Attempting to subscribe to push service...', 'info')
+            try {
+                const applicationServerKey = urlBase64ToUint8Array(key)
+                sub = await sw.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                })
+                log('✅ Push subscription created successfully', 'ok')
+            } catch (subscribeErr) {
+                // Enhanced error diagnosis
+                let diagnostic = subscribeErr.message
+                if (subscribeErr.message.includes('Invalid key')) {
+                    diagnostic = 'Server VAPID key is invalid or malformed. Verify PUBLIC_KEY in .env and restart the server.'
+                } else if (subscribeErr.message.includes('NetworkError')) {
+                    diagnostic = 'Network error connecting to push service. Check internet connection.'
+                } else if (subscribeErr.message.includes('NotAllowed')) {
+                    diagnostic = 'Notification permission not granted. Allow notifications in browser settings.'
+                } else if (subscribeErr.message.includes('abort')) {
+                    diagnostic = 'Push subscription was aborted. Try clearing browser cache and refreshing.'
+                }
+                log(`⚠️ Subscription attempt failed: ${diagnostic}`, 'warn')
+                throw new Error(diagnostic)
+            }
+        }
+
+        // Save the VAPID key hash for next time
+        localStorage.setItem('pushKeyHash', keyHash)
+
+        log('📤 Sending subscription to server...', 'info')
         const meta = { browser: getBrowser(), os: getOS(), standalone: isStandalone, ios: isIOS }
         const res = await fetch('/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...sub.toJSON(), meta })
         })
+
+        if (!res.ok) {
+            throw new Error(`Server subscription failed: ${res.status} ${res.statusText}`)
+        }
 
         const data = await res.json()
         document.getElementById('statSubs').textContent = data.total
@@ -835,13 +1183,95 @@ async function subscribe() {
 
         return true
     } catch (err) {
-        setStatus(3, 'err', err.message, 'Failed')
-        log(`❌ Subscribe error: ${err.message}`, 'err')
+        let hint = err.message
+        if (err.message.includes('push service error') || err.message.includes('Registration failed') || err.message.includes('NotAllowed')) {
+            hint = '❌ Browser cache conflict detected. SOLUTION: (1) Click "Clear Data" button below, (2) Close ALL browser tabs, (3) Refresh and try again. If still fails, make sure server was restarted after updating .env.'
+        } else if (err.message.includes('Invalid key') || err.message.includes('malformed')) {
+            hint = '❌ VAPID KEY ERROR: Server has invalid VAPID key. Restart the server after checking .env file contains valid PUBLIC_KEY and PRIVATE_KEY.'
+        } else if (err.message.includes('Failed to fetch VAPID')) {
+            hint = '❌ Cannot reach /vapidPublicKey endpoint. Server might be down. Verify server is running.'
+        } else if (err.message.includes('Invalid or empty VAPID')) {
+            hint = '❌ Server returned empty VAPID key. Check .env has PUBLIC_KEY set and restart server.'
+        } else if (err.message.includes('Server subscription failed')) {
+            hint = '❌ Server rejected subscription. Verify server is running and /subscribe endpoint is working.'
+        } else if (err.message.includes('permission') || err.message.includes('denied')) {
+            hint = '❌ Notification permission denied. Allow notifications: Settings → Privacy → Notifications → Allow'
+        } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+            hint = '❌ Network/Server error. Ensure: (1) Server is running on port 3004, (2) Internet connection is active, (3) No firewall blocks port 3004'
+        } else if (err.message.includes('abort')) {
+            hint = '❌ Push request was aborted. Clear browser data and try again.'
+        }
+        setStatus(3, 'err', hint, 'Failed')
+        log(`❌ Subscribe error: ${hint}`, 'err')
         return false
     }
 }
 
 // ── Send notification ─────────────────────────────────────────────────────────
+// ── Unsubscribe ───────────────────────────────────────────────────────────────
+async function unsubscribe() {
+    const btn = document.getElementById('modalDisableBtn')
+    btn.disabled = true
+    btn.innerHTML = '<span class="spin">⏳</span> Disabling...'
+
+    try {
+        // Unsubscribe from push manager
+        if (sw) {
+            const sub = await sw.pushManager.getSubscription()
+            if (sub) {
+                // Notify server to remove endpoint
+                try {
+                    await fetch('/unsubscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ endpoint: sub.endpoint })
+                    })
+                } catch (_) { /* server may not have /unsubscribe — that's ok */ }
+                try {
+                    await sub.unsubscribe()
+                } catch (unsubErr) {
+                    log(`⚠️ Failed to unsubscribe: ${unsubErr.message}. Clearing browser data will help.`, 'warn')
+                }
+            }
+        }
+
+        // Reset UI
+        document.getElementById('setupBadge').textContent = 'Not started'
+        document.getElementById('setupBadge').className = 'badge idle'
+
+        // Reset steps
+        setStep(1, '', null)
+        setStep(2, '', null)
+        setStep(3, '', null)
+        document.getElementById('step1Desc').textContent = 'Runs in the background and shows notifications even when this page is closed.'
+        document.getElementById('step2Desc').textContent = 'Grant permission so your OS can display push notifications.'
+        document.getElementById('step3Desc').textContent = 'Your device registers with push servers. Your endpoint is saved on this server.'
+
+        setStatus(3, 'idle', 'Not subscribed', '—')
+
+        // Reset enable button on trigger card
+        const enableBtn = document.getElementById('enableBtn')
+        if (enableBtn) {
+            enableBtn.textContent = 'Enable'
+            enableBtn.className = 'btn btn-primary'
+            enableBtn.style.cssText = 'width:auto;padding:10px 16px;font-size:0.84rem;flex-shrink:0;'
+            enableBtn.onclick = openSetupModal
+        }
+
+        // Reset modal enable button
+        const mBtn = document.getElementById('modalEnableBtn')
+        if (mBtn) { mBtn.disabled = false; mBtn.innerHTML = '🔔 Enable Background Notifications' }
+
+        log('🔕 Push subscription removed', 'warn')
+        closeSetupModal()
+
+    } catch (err) {
+        log(`❌ Unsubscribe failed: ${err.message}`, 'err')
+        btn.disabled = false
+        btn.innerHTML = '🔕 Disable Notifications'
+    }
+}
+
 async function sendNotif() {
     const btn = document.getElementById('sendBtn')
     btn.disabled = true
@@ -987,9 +1417,12 @@ async function init() {
             if (Notification.permission === 'granted') {
                 document.getElementById('setupBadge').textContent = 'Active ✓'
                 document.getElementById('setupBadge').className = 'badge ok'
-                const btn = document.getElementById('enableBtn')
-                if (btn) {
-                    btn.outerHTML = `<button class="btn btn-success">✓ Background Notifications Active</button>`
+                const enableBtn = document.getElementById('enableBtn')
+                if (enableBtn) {
+                    enableBtn.textContent = '✓ Manage'
+                    enableBtn.className = 'btn btn-success'
+                    enableBtn.style.cssText = 'width:auto;padding:10px 16px;font-size:0.84rem;flex-shrink:0;'
+                    enableBtn.onclick = openSetupModal
                 }
             }
         } else {
@@ -1002,7 +1435,15 @@ async function init() {
     await checkServer()
 }
 
-init()
+init().then(() => {
+    // Auto-open on first visit — only if not already subscribed
+    const alreadyActive = document.getElementById('setupBadge').textContent === 'Active ✓'
+    const seen = localStorage.getItem('notif_popup_seen')
+    if (!seen && !alreadyActive) {
+        openSetupModal()
+        localStorage.setItem('notif_popup_seen', '1')
+    }
+})
 </script>
 </body>
 </html>

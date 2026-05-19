@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABqCwlDi9s-vT1A-d2hme7C8rVJw5YRj--nBT1BL1zRujsU0MPUct1VP3LVQxK0QtKJ49kRs9SrAOWTEOwAuvXnD081HWXpEjMgmlbPOtcjyhbBtEn1ph_iUwwzkhsWj1I_dqPxxxaE-jQwAd0UHCv67jqpaK1w41oT4iOO4tgTTmMvw-E",
+    "expirationTime": null,
+    "keys": {
+      "auth": "DTx0SktP6Yg_9_8ftqASAg",
+      "p256dh": "BICSe9SXDD4bLaRUnleutkLZne9GftD1YhQkFFtt6e7RnK54sMpeWL0oyDIqPXmGaD7UN9pxRSUixjqIhYiOkT0"
+    },
+    "meta": {
+      "browser": "Firefox",
+      "os": "Windows",
+      "standalone": false,
+      "ios": false
+    },
+    "updatedAt": "2026-05-18T12:42:43.614Z"
+  }
+]
