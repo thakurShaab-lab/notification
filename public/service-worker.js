@@ -1,29 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SERVICE WORKER — Background Push Notifications
    
-   HOW BACKGROUND DELIVERY WORKS:
-   ─────────────────────────────
-   1. Browser sends subscription to YOUR SERVER (endpoint + keys)
-   2. YOUR SERVER sends push via web-push library to Google/Apple/MS servers
-   3. Google/Apple/MS servers wake up the SERVICE WORKER on the device
-   4. Service Worker shows the OS-native notification (even if browser = closed)
-   
-   The browser process does NOT need to be running.
-   The Service Worker is woken up by the OS push service (FCM/APNs/WNS).
+   DELIVERY STRATEGY:
+   ─────────────────
+   • Browser OPEN  → Socket.io delivers to page directly (with looping sound)
+   • Browser CLOSED → Push server wakes this SW → OS notification shown here
+                      SW posts message to any open clients to trigger sound
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const CACHE_NAME = 'notify-v2'
 const ORIGIN = self.location.origin
 
-// ─── Install ─────────────────────────────────────────────────────────────────
-self.addEventListener('install', event => {
-    console.log('[SW] Install')
-    self.skipWaiting()
-})
+self.addEventListener('install', () => self.skipWaiting())
 
-// ─── Activate ────────────────────────────────────────────────────────────────
 self.addEventListener('activate', event => {
-    console.log('[SW] Activate')
     event.waitUntil(
         Promise.all([
             self.clients.claim(),
@@ -34,7 +24,7 @@ self.addEventListener('activate', event => {
     )
 })
 
-// ─── PUSH — This fires even when browser is fully closed ─────────────────────
+// ─── PUSH — fires when browser is closed (web-push path) ──────────────────────
 self.addEventListener('push', event => {
     console.log('[SW] Push received at:', new Date().toISOString())
 
@@ -58,7 +48,6 @@ self.addEventListener('push', event => {
             try {
                 const parsed = event.data.json()
                 data = { ...data, ...parsed }
-
                 if (data.icon && !data.icon.startsWith('http')) data.icon = ORIGIN + data.icon
                 if (data.badge && !data.badge.startsWith('http')) data.badge = ORIGIN + data.badge
                 if (data.image && !data.image.startsWith('http')) data.image = ORIGIN + data.image
@@ -91,16 +80,17 @@ self.addEventListener('push', event => {
             ]
         }
 
-        console.log('[SW] Showing notification:', data.title)
         await self.registration.showNotification(data.title, options)
+
+        // Tell any open browser tabs to play the notification sound
+        const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        clientList.forEach(client => client.postMessage({ type: 'PLAY_NOTIFICATION_SOUND' }))
     })())
 })
 
-// ─── Notification Click ───────────────────────────────────────────────────────
+// ─── Notification Click ────────────────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
-    console.log('[SW] Click:', event.action)
     event.notification.close()
-
     if (event.action === 'dismiss') return
 
     const targetUrl = event.notification.data?.url || '/'
@@ -108,6 +98,8 @@ self.addEventListener('notificationclick', event => {
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then(clientList => {
+                // Tell all open tabs to stop the sound when user clicks
+                clientList.forEach(c => c.postMessage({ type: 'STOP_NOTIFICATION_SOUND' }))
                 for (const client of clientList) {
                     if ('focus' in client) {
                         client.focus()
@@ -128,7 +120,6 @@ self.addEventListener('notificationclose', event => {
 
 // ─── Push Subscription Change (VAPID key rotation) ────────────────────────────
 self.addEventListener('pushsubscriptionchange', event => {
-    console.log('[SW] Subscription changed — re-subscribing')
     event.waitUntil(
         self.registration.pushManager.subscribe(event.oldSubscription.options)
             .then(sub =>

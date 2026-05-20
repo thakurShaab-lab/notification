@@ -567,9 +567,88 @@
         }
         .btn-danger:hover { background: rgba(239,68,68,0.18); border-color: var(--red); }
         .btn-danger:active { transform: scale(0.97); }
+        /* ── Sound alert banner ── */
+        .sound-alert {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            background: linear-gradient(135deg, #1a1a2e, #13131f);
+            border: 1px solid rgba(99,102,241,0.5);
+            border-radius: 14px;
+            padding: 14px 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.15);
+            display: none;
+            align-items: center;
+            gap: 14px;
+            min-width: 300px;
+            max-width: 90vw;
+            animation: slideDown 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .sound-alert.show { display: flex; }
+        @keyframes slideDown {
+            from { opacity:0; transform: translateX(-50%) translateY(-16px) scale(0.95); }
+            to   { opacity:1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        .sound-alert-pulse {
+            width: 36px; height: 36px;
+            background: rgba(99,102,241,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .sound-alert-pulse::after {
+            content: '';
+            position: absolute; inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(99,102,241,0.5);
+            animation: ringPulse 1.2s ease-out infinite;
+        }
+        @keyframes ringPulse {
+            0%   { transform: scale(1);   opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+        .sound-alert-text { flex: 1; }
+        .sound-alert-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+        .sound-alert-body  { font-size: 0.78rem; color: var(--text-2); margin-top: 2px; }
+        .sound-alert-timer { font-size: 0.72rem; color: var(--accent); font-weight: 600; margin-top: 4px; }
+        .btn-stop {
+            background: rgba(239,68,68,0.12);
+            color: var(--red);
+            border: 1px solid rgba(239,68,68,0.35);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: var(--font);
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-stop:hover { background: rgba(239,68,68,0.22); border-color: var(--red); }
+        .btn-stop:active { transform: scale(0.96); }
     </style>
 </head>
 <body>
+
+<!-- Notification sound (hidden) -->
+<audio id="notifAudio" src="/notification-sound.mp3" preload="auto"></audio>
+
+<!-- Floating sound alert banner -->
+<div class="sound-alert" id="soundAlert">
+    <div class="sound-alert-pulse">🔔</div>
+    <div class="sound-alert-text">
+        <div class="sound-alert-title" id="soundAlertTitle">New Notification</div>
+        <div class="sound-alert-body" id="soundAlertBody">You have a new message</div>
+        <div class="sound-alert-timer" id="soundAlertTimer">🔊 Ringing...</div>
+    </div>
+    <button class="btn-stop" onclick="stopSound()">⏹ Stop</button>
+</div>
 <div class="wrap">
 
     <div class="header">
@@ -802,6 +881,7 @@
 
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
 /* ════════════════════════════════════════════════════════════════════════════
    NOTIFICATION CLIENT
@@ -813,6 +893,142 @@ let isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 let isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
 let deferredInstall = null
+
+// ── Sound loop state ──────────────────────────────────────────────────────────
+let soundStopTimer = null     // setTimeout handle to auto-stop after 20s
+let soundInterval  = null     // setInterval to replay audio on loop
+let socket = null             // Socket.io connection
+
+// ── Socket.io setup ───────────────────────────────────────────────────────────
+function connectSocket() {
+    socket = io()
+
+    socket.on('connect', () => {
+        log('🔌 Socket connected (real-time delivery active)', 'ok')
+        // Register this socket against the push subscription endpoint
+        registerSocketEndpoint()
+    })
+
+    socket.on('disconnect', () => {
+        log('🔌 Socket disconnected', 'warn')
+    })
+
+    // Server delivers notification directly via socket (browser is open path)
+    socket.on('notification', (data) => {
+        log(`📩 Socket notification received: ${data.title}`, 'ok')
+        playNotificationSound(data)
+        // Show a SW notification too so it behaves consistently
+        if (sw && Notification.permission === 'granted') {
+            sw.showNotification(data.title, {
+                body: data.body,
+                icon: data.icon || '/icon.png',
+                badge: data.badge || '/badge.png',
+                tag: data.tag || ('s-' + Date.now()),
+                renotify: true,
+                requireInteraction: data.requireInteraction !== false,
+                data: { url: data.url || '/' }
+            }).catch(() => {})
+        }
+    })
+}
+
+async function registerSocketEndpoint() {
+    if (!socket || !sw) return
+    try {
+        const sub = await sw.pushManager.getSubscription()
+        if (sub) {
+            socket.emit('register', { endpoint: sub.endpoint })
+            log('📍 Socket registered with push endpoint', 'info')
+        }
+    } catch (e) { /* SW not ready yet */ }
+}
+
+// ── Notification sound (loop 10–20 seconds, auto-stop) ────────────────────────
+function playNotificationSound(notifData = {}) {
+    const audio = document.getElementById('notifAudio')
+    const alert = document.getElementById('soundAlert')
+    if (!audio) return
+
+    stopSound() // clear any existing loop
+
+    // Unlock audio context on Safari (requires user gesture on first play)
+    // We preload on first interaction via unlockAudio()
+    audio.currentTime = 0
+    audio.loop = false // we control looping manually so we can stop cleanly
+
+    const title = notifData.title || 'New Notification'
+    const body  = notifData.body  || 'You have a new message'
+    document.getElementById('soundAlertTitle').textContent = title
+    document.getElementById('soundAlertBody').textContent  = body
+
+    let secondsLeft = 20
+    document.getElementById('soundAlertTimer').textContent = `🔊 Ringing… auto-stop in ${secondsLeft}s`
+    alert.classList.add('show')
+
+    const tick = () => {
+        secondsLeft--
+        if (secondsLeft <= 0) {
+            document.getElementById('soundAlertTimer').textContent = '🔊 Ringing…'
+        } else {
+            document.getElementById('soundAlertTimer').textContent = `🔊 Ringing… auto-stop in ${secondsLeft}s`
+        }
+    }
+
+    const playLoop = () => {
+        audio.currentTime = 0
+        audio.play().catch(() => {})
+    }
+
+    playLoop()
+    // Replay when track ends
+    audio.onended = playLoop
+
+    // Countdown display
+    const countdownInterval = setInterval(tick, 1000)
+
+    // Auto-stop between 10–20 seconds (random to feel natural)
+    const stopAfter = (Math.floor(Math.random() * 11) + 10) * 1000  // 10000–20000 ms
+    soundStopTimer = setTimeout(() => {
+        clearInterval(countdownInterval)
+        stopSound()
+    }, stopAfter)
+
+    // Store interval ref so stopSound can clear it
+    soundInterval = countdownInterval
+}
+
+function stopSound() {
+    const audio = document.getElementById('notifAudio')
+    const alert = document.getElementById('soundAlert')
+
+    if (audio) {
+        audio.pause()
+        audio.currentTime = 0
+        audio.onended = null
+    }
+    if (soundStopTimer) { clearTimeout(soundStopTimer);  soundStopTimer = null }
+    if (soundInterval)  { clearInterval(soundInterval);  soundInterval  = null }
+    if (alert) alert.classList.remove('show')
+}
+
+// Unlock Safari audio — call on first user interaction
+function unlockAudio() {
+    const audio = document.getElementById('notifAudio')
+    if (!audio || audio._unlocked) return
+    audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio._unlocked = true }).catch(() => {})
+}
+document.addEventListener('click', unlockAudio, { once: true })
+document.addEventListener('touchstart', unlockAudio, { once: true })
+
+// Listen for messages from Service Worker (web-push path with browser open)
+navigator.serviceWorker?.addEventListener('message', (event) => {
+    if (event.data?.type === 'PLAY_NOTIFICATION_SOUND') {
+        playNotificationSound()
+    }
+    if (event.data?.type === 'STOP_NOTIFICATION_SOUND') {
+        stopSound()
+    }
+})
 
 // ── Preview sync ─────────────────────────────────────────────────────────────
 function updatePreview() {
@@ -1022,6 +1238,9 @@ async function setup() {
     document.getElementById('setupBadge').textContent = 'Active ✓'
     document.getElementById('setupBadge').className = 'badge ok'
     btn.innerHTML = '✓ All Done!'
+
+    // Register socket ↔ push endpoint mapping
+    registerSocketEndpoint()
 
     setTimeout(() => {
         closeSetupModal()
@@ -1296,8 +1515,9 @@ async function sendNotif() {
         if (data.success) {
             sessionSent += data.sent
             document.getElementById('statSent').textContent = sessionSent
-            log(`✅ Sent to ${data.sent} device(s) | Failed: ${data.failed} | Cleaned: ${data.removed}`, 'ok')
-            log(`💡 Close this browser now — notification should still arrive`, 'info')
+            const via = data.socketSent > 0 ? `${data.socketSent} via socket` : 'via push'
+            log(`✅ Sent to ${data.sent} device(s) [${via}] | Failed: ${data.failed} | Cleaned: ${data.removed}`, 'ok')
+            if (data.socketSent === 0) log(`💡 Close this browser now — notification should still arrive`, 'info')
         } else {
             log(`❌ ${data.error}`, 'err')
         }
@@ -1314,8 +1534,11 @@ async function localTest() {
     if (!sw) { log('❌ Service Worker not registered yet', 'err'); return }
     if (Notification.permission !== 'granted') { log('❌ Permission not granted', 'err'); return }
 
-    await sw.showNotification(document.getElementById('nTitle').value || '🧪 Local Test', {
-        body: document.getElementById('nBody').value || 'Local test — confirms SW is working',
+    const title = document.getElementById('nTitle').value || '🧪 Local Test'
+    const body  = document.getElementById('nBody').value || 'Local test — confirms SW is working'
+
+    await sw.showNotification(title, {
+        body,
         icon: '/icon.png',
         badge: '/badge.png',
         tag: 'local-' + Date.now(),
@@ -1327,7 +1550,8 @@ async function localTest() {
             { action: 'dismiss', title: 'Dismiss' }
         ]
     })
-    log('✅ Local notification shown (SW is working)', 'ok')
+    playNotificationSound({ title, body })
+    log('✅ Local notification shown + sound playing', 'ok')
     log('📌 Now test "Send to All" and CLOSE THE BROWSER — notification should still arrive', 'info')
 }
 
@@ -1433,6 +1657,9 @@ async function init() {
     }
 
     await checkServer()
+
+    // Connect Socket.io for real-time delivery when browser is open
+    connectSocket()
 }
 
 init().then(() => {

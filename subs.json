@@ -1,17 +1,41 @@
 [
   {
-    "endpoint": "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABqCwlDi9s-vT1A-d2hme7C8rVJw5YRj--nBT1BL1zRujsU0MPUct1VP3LVQxK0QtKJ49kRs9SrAOWTEOwAuvXnD081HWXpEjMgmlbPOtcjyhbBtEn1ph_iUwwzkhsWj1I_dqPxxxaE-jQwAd0UHCv67jqpaK1w41oT4iOO4tgTTmMvw-E",
+    "endpoint": "https://fcm.googleapis.com/fcm/send/cDY0bPCc9gc:APA91bE9iCXXJXX_3xvWvVOHtYBlH3LnFedb_TeJtZdVXnIcXqN3JaeBiIboUYUxuodsUQY78ClVl75nXI0Vjci0SqrLuN8sRvFBEXJz9ZCTNakMwhfYJsaPDo2PbpOlr4ilQExyA7NS",
     "expirationTime": null,
     "keys": {
-      "auth": "DTx0SktP6Yg_9_8ftqASAg",
-      "p256dh": "BICSe9SXDD4bLaRUnleutkLZne9GftD1YhQkFFtt6e7RnK54sMpeWL0oyDIqPXmGaD7UN9pxRSUixjqIhYiOkT0"
+      "p256dh": "BLhKyBjTf9qcalpDYWUFy5QL1PLzkrT4RmJhm3mwyMv8FlH6UU7TK-iRxlZU3eBznn9ZMMnSi1TGlEvtspfMgmA",
+      "auth": "7puCMs5Xzkudp_WcZf1KsA"
+    },
+    "meta": {},
+    "updatedAt": "2026-05-20T09:10:53.133Z"
+  },
+  {
+    "endpoint": "https://web.push.apple.com/QBDcKatq6ruw9kjJF4G4_oVWacuEoxD0Jo8wyS_1YfCVtezn-t3cBabtLd21FS_VwYaTQWFif5F11l0prVJ9F2sDIZGtuBHqMH9ztAGrS0GSccNLMuD2uX8xfdrMJzPC3xyk408ow-TBnzzSfq-oNotrRxeghWCbMbZgtL0ejq8",
+    "keys": {
+      "p256dh": "BMOrFhajCeYGj28CPTau1OJ9tGs6peXj5lyYi2ahVfCjWhgNdNm6PG4aSCp28C2lwyQajsnmXc80MvpyujWcnSM",
+      "auth": "OCmkmBl73q6EGKH461wSfA"
     },
     "meta": {
-      "browser": "Firefox",
+      "browser": "Safari",
+      "os": "macOS",
+      "standalone": false,
+      "ios": false
+    },
+    "updatedAt": "2026-05-20T09:36:55.350Z"
+  },
+  {
+    "endpoint": "https://wns2-ln2p.notify.windows.com/w/?token=BQYAAACQts%2fCD3tjU1Qh9Ee58%2fqJeAkMmoP0rOciM27icZcNdqvC7qYwOeHKt1TItA%2bJmNrVpiFclDfp58WKWQjEE3Pz6BPmSUYOdJQzrq8j2580e%2f7cJPcKk3nqXGLau2M6cRfAqL7Ktfp9U7%2fq89ERsAs5twuV9CuSTRWHuQI5K%2fMpd7gRG2h5yvqkIttDDlG9N0BCJUX9dYhdB%2fFX3nQAAHYHNdmJrb7J2HMG4SweyenJzpcl%2baGGahwzBS6ZOsEdmH8Ys6%2frjAPG2LbMFSWqhrKkEsNonowMd0NqHPRxJPogLJvXR0tL4SeYY5mI2TZu%2bhoghgBP5OXON0m7WdPVU4jm%2bkNXoAzz39bqtK2khA09RQ%3d%3d",
+    "expirationTime": null,
+    "keys": {
+      "p256dh": "BOvgrOAxvQo0q3luQZSHx1dP3EdoeeVYmRg2_OUOdlOqG3R_zjUqXletjiXvSnaHBbBaw1MVo2rhu4VCLsEXexM",
+      "auth": "OZhUa9IfMwpt_CVVoxQrcw"
+    },
+    "meta": {
+      "browser": "Edge",
       "os": "Windows",
       "standalone": false,
       "ios": false
     },
-    "updatedAt": "2026-05-18T12:42:43.614Z"
+    "updatedAt": "2026-05-20T09:48:53.784Z"
   }
 ]
